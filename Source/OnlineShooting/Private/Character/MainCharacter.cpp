@@ -3,32 +3,45 @@
 
 #include "Character/MainCharacter.h"
 
-// Sets default values
+#include "UI/GameLobbyWidget.h"
+
+#include "Blueprint/UserWidget.h"
+#include "Kismet/GameplayStatics.h"
+
 AMainCharacter::AMainCharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
+ 	
 }
 
-// Called when the game starts or when spawned
 void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
 
-// Called every frame
-void AMainCharacter::Tick(float DeltaTime)
+void AMainCharacter::AddWidget_Implementation(TSubclassOf<class UUserWidget> _widget)
 {
-	Super::Tick(DeltaTime);
+	CreatedLobbyWidget = CreateWidget<UGameLobbyWidget>(GetWorld(), _widget);
+	if (CreatedLobbyWidget)
+		CreatedLobbyWidget->AddToViewport();
+}
+
+void AMainCharacter::AddPlayerInLobby_Implementation()
+{
 
 }
 
-// Called to bind functionality to input
-void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void AMainCharacter::OnGameStart_Implementation()
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	CreatedLobbyWidget->RemoveFromViewport();
+	CreatedLobbyWidget->RemoveFromParent();
 
+	GameStartDynamic.Broadcast();
 }
 
+void AMainCharacter::OnGameStartMulticast_Implementation(FVector Loc, FRotator Rot)
+{
+	SetActorLocation(Loc);
+	auto con = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	con->SetControlRotation(Rot);
+}

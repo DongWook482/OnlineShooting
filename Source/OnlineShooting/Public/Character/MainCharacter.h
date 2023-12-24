@@ -6,24 +6,33 @@
 #include "GameFramework/Character.h"
 #include "MainCharacter.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDele_Dynamic);
+
 UCLASS()
 class ONLINESHOOTING_API AMainCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
 	AMainCharacter();
 
+	UFUNCTION(Reliable, Client)
+	void AddWidget(TSubclassOf<class UUserWidget> _widget);
+	UFUNCTION(Reliable, Client)
+	void AddPlayerInLobby();
+
+	UFUNCTION(Reliable, Client)
+	void OnGameStart();
+	UFUNCTION(Reliable, NetMulticast)
+	void OnGameStartMulticast(FVector Loc, FRotator Rot);
+
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+public:
+	class UGameLobbyWidget* CreatedLobbyWidget;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	UPROPERTY(BlueprintAssignable)
+	FDele_Dynamic GameStartDynamic;
 
 };
